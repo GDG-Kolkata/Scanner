@@ -33,11 +33,11 @@ export default function Details() {
         setLoading(true);
         setError(null);
 
-        const decodedData = atob(scannedData);
+        const scannedDataJson = JSON.parse(decodeURIComponent(scannedData));
 
         const response = await fetch(
           `https://devfest-internal.vercel.app/attendee/?user_id=${encodeURIComponent(
-            decodedData
+            atob(scannedDataJson["userId"])
           )}&requested_by=${localStorage.getItem("password")}`
         );
 
