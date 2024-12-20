@@ -1,14 +1,19 @@
 .name {
   font-size: 24px;
   font-weight: 600;
-  margin-bottom: 10px;
-  color: #ff0000;
+  margin: 0;
+  padding: 0;
 }
 
 .email {
   font-size: 16px;
   color: #4b5563;
-  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.phone {
+  font-size: 16px;
+  color: #4b5563;
 }
 
 .details-container {
@@ -49,6 +54,7 @@
   border: 1px solid #e5e5e5;
   border-radius: 8px;
   gap: 10px;
+  background-color: #f0f0f0;
 }
 
 .time {

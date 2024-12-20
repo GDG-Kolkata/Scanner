@@ -12,21 +12,6 @@ export default function Details() {
   const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
 
-  // const mockAttendeeData = {
-  //   _id: "attendeeId",
-  //   name: "John Doe",
-  //   email: "john.doe@example.com",
-  //   check_in: false,
-  //   swag: false,
-  //   food: true,
-  //   check_in_updatedAt: "2024-12-20T10:00:00.000Z",
-  //   swag_updatedAt: "2024-12-20T11:00:00.000Z",
-  //   food_updatedAt: "2024-12-20T12:00:00.000Z",
-  //   check_in_updatedBy: "requested_by_email",
-  //   swag_updatedBy: "requested_by_email",
-  //   food_updatedBy: "requested_by_email",
-  // };
-
   useEffect(() => {
     const fetchAttendeeData = async () => {
       try {
@@ -52,8 +37,6 @@ export default function Details() {
         const data = await response.json();
 
         setAttendeeData(data);
-
-        // const data = mockAttendeeData;
 
         setAttendeeData(data);
 
@@ -93,19 +76,38 @@ export default function Details() {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/attendee/update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: scannedData,
-          updates: switches,
-        }),
+      const scannedDataJson = JSON.parse(decodeURIComponent(scannedData));
+
+      const _switches = {
+        ...switches,
+      };
+
+      Object.keys(_switches).forEach((key) => {
+        if (_switches[key] === false) {
+          delete _switches[key];
+        }
       });
+
+      const response = await fetch(
+        `https://devfest-internal.vercel.app/attendee/${atob(
+          scannedDataJson["userId"]
+        )}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            requested_by: window.localStorage.getItem("password"),
+            ..._switches,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to update attendance");
+      } else {
+        navigate("/");
       }
 
       setHasChanges(false);
@@ -136,15 +138,89 @@ export default function Details() {
 
   return (
     <div className="details-container">
-      <h2 className="name">{attendeeData["name"]}</h2>
-      <h3 className="email">{attendeeData["email"]}</h3>
-      <p></p>
+      <div
+        className="item"
+        style={{
+          display: "flex",
+          alignItems: "start",
+          gapY: "1rem",
+          flexDirection: "column",
+          backgroundColor: "#ffe7a5",
+        }}
+      >
+        <h2 className="name">{`${attendeeData["name"]} (${attendeeData["gender"]})`}</h2>
 
-      {attendeeData["paymentDetails"]["checkInStatus"] === "TRUE" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <h3 className="email">
+            <a
+              style={{
+                color: "blue",
+                textDecoration: "none",
+              }}
+              href={`mailto:${attendeeData["email"]}`}
+            >
+              {attendeeData["email"]}
+            </a>
+          </h3>
+          <h3 className="phone">
+            <a
+              style={{
+                color: "blue",
+                textDecoration: "none",
+              }}
+              href={`tel:${attendeeData["phone"]}`}
+            >
+              {attendeeData["phone"]}
+            </a>
+          </h3>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "1rem",
+          }}
+        >
+          <p>{`Food: ${attendeeData["foodPreference"]}`}</p>
+          <p>{`T-Shirt: ${attendeeData["tshirtSize"]}`}</p>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "1rem",
+          }}
+        >
+          <p>{`Age: ${attendeeData["age"]}`}</p>
+          <p>{`City: ${attendeeData["city"]}`}</p>
+        </div>
+      </div>
+
+      {attendeeData["organisationDetails"] ? (
+        <div
+          style={{
+            backgroundColor: "#f8d8d8",
+          }}
+          className="item"
+        >
+          <p>{`${attendeeData["organisationDetails"]["designation"]}, ${attendeeData["organisationDetails"]["name"]}`}</p>
+        </div>
+      ) : null}
+
+      {attendeeData["check_in"] ? (
         <div className="item">
           <span>Check In</span>
           <span className="time">
-            {formatDateTime(attendeeData["checkInTime"])}
+            {formatDateTime(attendeeData["check_in_updatedAt"])}
           </span>
         </div>
       ) : (
@@ -161,11 +237,11 @@ export default function Details() {
         </div>
       )}
 
-      {attendeeData["paymentDetails"]["goodieStatus"] === "TRUE" ? (
+      {attendeeData["swag"] ? (
         <div className="item">
           <span>Swag</span>
           <span className="time">
-            {formatDateTime(attendeeData["goodieCollectedAt"])}
+            {formatDateTime(attendeeData["swag_updatedAt"])}
           </span>
         </div>
       ) : (
