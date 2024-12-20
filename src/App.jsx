@@ -1,24 +1,46 @@
 import { useState, useEffect } from "react";
 import { useZxing } from "react-zxing";
 import "./App.css";
+import { useNavigate } from "react-router-dom";
 
 function App() {
-  const [result, setResult] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { ref } = useZxing({
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const navigate = useNavigate();
+
+  const { ref, stop, start } = useZxing({
     onDecodeResult(result) {
-      setResult(result.getText());
+      const scannedText = result.getText();
+      navigate(`/result/${encodeURIComponent(scannedText)}`);
     },
+    paused: isModalOpen || !isCameraActive,
   });
 
   useEffect(() => {
     const savedPassword = localStorage.getItem("password");
     if (!savedPassword) {
       setIsModalOpen(true);
+      setIsCameraActive(false);
+    } else {
+      setIsCameraActive(true);
     }
-  }, []);
+
+    return () => {
+      if (stop) stop();
+    };
+  }, [stop]);
+
+  useEffect(() => {
+    if (!isModalOpen && start) {
+      setIsCameraActive(true);
+      start();
+    } else if (isModalOpen && stop) {
+      setIsCameraActive(false);
+      stop();
+    }
+  }, [isModalOpen, start, stop]);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -27,18 +49,19 @@ function App() {
     }
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: username,
-          code: password,
-        }),
-      });
+      const response = await fetch(
+        `https://example.com/generate_session/?email=${username}&code=${password}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       if (response.ok) {
         localStorage.setItem("password", password);
         setIsModalOpen(false);
+        setIsCameraActive(true);
+        if (start) start();
       } else {
         alert("Invalid credentials. Please try again.");
       }
@@ -79,10 +102,7 @@ function App() {
         </div>
       )}
 
-      <video className="qr__video__preview" ref={ref} />
-      <p className="result__text">
-        <span>Last result:</span> <span>{result}</span>
-      </p>
+      {isModalOpen ? null : <video className="qr__video__preview" ref={ref} />}
     </div>
   );
 }
