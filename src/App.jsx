@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useZxing } from "react-zxing";
 import "./App.css";
 import { useNavigate } from "react-router-dom";
+import { SERVER_URL } from "./constants";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +51,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `https://devfest-internal.vercel.app/generate_session/?email=${username}&code=${password}`,
+        `${SERVER_URL}?email=${username}&code=${password}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },

@@ -2,6 +2,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import "./Details.css";
+import { SERVER_URL } from "./constants";
+
+
 
 export default function Details() {
   const { scannedData } = useParams();
@@ -21,7 +24,7 @@ export default function Details() {
         const scannedDataJson = JSON.parse(decodeURIComponent(scannedData));
 
         const response = await fetch(
-          `https://devfest-internal.vercel.app/attendee/${encodeURIComponent(
+          `${SERVER_URL}${encodeURIComponent(
             atob(scannedDataJson["userId"])
           )}`
         );
@@ -89,7 +92,7 @@ export default function Details() {
       });
 
       const response = await fetch(
-        `https://devfest-internal.vercel.app/attendee/${atob(
+        `${SERVER_URL}${atob(
           scannedDataJson["userId"]
         )}`,
         {
