@@ -12,20 +12,20 @@ export default function Details() {
   const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
 
-  const mockAttendeeData = {
-    _id: "attendeeId",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    check_in: false,
-    swag: false,
-    food: true,
-    check_in_updatedAt: "2024-12-20T10:00:00.000Z",
-    swag_updatedAt: "2024-12-20T11:00:00.000Z",
-    food_updatedAt: "2024-12-20T12:00:00.000Z",
-    check_in_updatedBy: "requested_by_email",
-    swag_updatedBy: "requested_by_email",
-    food_updatedBy: "requested_by_email",
-  };
+  // const mockAttendeeData = {
+  //   _id: "attendeeId",
+  //   name: "John Doe",
+  //   email: "john.doe@example.com",
+  //   check_in: false,
+  //   swag: false,
+  //   food: true,
+  //   check_in_updatedAt: "2024-12-20T10:00:00.000Z",
+  //   swag_updatedAt: "2024-12-20T11:00:00.000Z",
+  //   food_updatedAt: "2024-12-20T12:00:00.000Z",
+  //   check_in_updatedBy: "requested_by_email",
+  //   swag_updatedBy: "requested_by_email",
+  //   food_updatedBy: "requested_by_email",
+  // };
 
   useEffect(() => {
     const fetchAttendeeData = async () => {
@@ -33,24 +33,27 @@ export default function Details() {
         setLoading(true);
         setError(null);
 
-        // const response = await fetch(
-        //   `/attendee/?user_id=${encodeURIComponent(
-        //     scannedData
-        //   )}&requested_by=YOUR_ACCESS_CODE`
-        // );
+        const decodedData = atob(scannedData);
 
-        // if (!response.ok) {
-        //   throw new Error(
-        //     response.status === 400
-        //       ? "Invalid attendee ID"
-        //       : "Failed to fetch attendee data"
-        //   );
-        // }
+        const response = await fetch(
+          `https://devfest-internal.vercel.app/attendee/?user_id=${encodeURIComponent(
+            decodedData
+          )}&requested_by=${localStorage.getItem("password")}`
+        );
 
-        // const data = await response.json();
-        // setAttendeeData(data);
+        if (!response.ok) {
+          throw new Error(
+            response.status === 400
+              ? "Invalid attendee ID"
+              : "Failed to fetch attendee data"
+          );
+        }
 
-        const data = mockAttendeeData;
+        const data = await response.json();
+
+        setAttendeeData(data);
+
+        // const data = mockAttendeeData;
 
         setAttendeeData(data);
 
@@ -136,12 +139,13 @@ export default function Details() {
     <div className="details-container">
       <h2 className="name">{attendeeData["name"]}</h2>
       <h3 className="email">{attendeeData["email"]}</h3>
+      <p></p>
 
-      {attendeeData["check_in"] ? (
+      {attendeeData["paymentDetails"]["checkInStatus"] === "TRUE" ? (
         <div className="item">
           <span>Check In</span>
           <span className="time">
-            {formatDateTime(attendeeData["check_in_updatedAt"])}
+            {formatDateTime(attendeeData["checkInTime"])}
           </span>
         </div>
       ) : (
@@ -158,11 +162,11 @@ export default function Details() {
         </div>
       )}
 
-      {attendeeData["swag"] ? (
+      {attendeeData["paymentDetails"]["goodieStatus"] === "TRUE" ? (
         <div className="item">
           <span>Swag</span>
           <span className="time">
-            {formatDateTime(attendeeData["swag_updatedAt"])}
+            {formatDateTime(attendeeData["goodieCollectedAt"])}
           </span>
         </div>
       ) : (

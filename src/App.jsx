@@ -50,7 +50,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `https://example.com/generate_session/?email=${username}&code=${password}`,
+        `https://devfest-internal.vercel.app/generate_session/?email=${username}&code=${password}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
