@@ -13,7 +13,7 @@ function App() {
   const { ref, stop, start } = useZxing({
     onDecodeResult(result) {
       const scannedText = result.getText();
-      navigate(`/result/${encodeURIComponent(scannedText)}`);
+      navigate(`/result/${scannedText}`);
     },
     paused: isModalOpen || !isCameraActive,
   });

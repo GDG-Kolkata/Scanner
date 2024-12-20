@@ -36,9 +36,9 @@ export default function Details() {
         const scannedDataJson = JSON.parse(decodeURIComponent(scannedData));
 
         const response = await fetch(
-          `https://devfest-internal.vercel.app/attendee/?user_id=${encodeURIComponent(
+          `https://devfest-internal.vercel.app/attendee/${encodeURIComponent(
             atob(scannedDataJson["userId"])
-          )}&requested_by=${localStorage.getItem("password")}`
+          )}`
         );
 
         if (!response.ok) {
@@ -57,7 +57,6 @@ export default function Details() {
 
         setAttendeeData(data);
 
-        // Initialize switches for items without datetime
         const initialSwitches = {};
         Object.entries(data).forEach(([key, value]) => {
           if (!value) {
